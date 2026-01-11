@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 # Initialiser Firebase
-cred = credentials.Certificate("path_to_your_firebase_admin_sdk_json_file.json")
+cred = credentials.Certificate("firebase_admin_sdk_key.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://project-a9f16-default-rtdb.europe-west1.firebasedatabase.app/'  # Remplacez par votre URL Firebase
+    'databaseURL': 'https://console.firebase.google.com/project/firevent-iot-ea63b/database/firevent-iot-ea63b-default-rtdb/data'  # Remplacez par votre URL Firebase
 })
 
 # Récupérer les données de Firebase
