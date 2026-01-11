@@ -4,11 +4,13 @@ from firebase_admin import credentials, db
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+import os
 
-# Initialiser Firebase avec la clé JSON
-cred = credentials.Certificate("FIREBASE_CREDENTIALS_PATH")  # Cette valeur sera obtenue via Streamlit Secrets
+# Charger la clé Firebase depuis les secrets Streamlit
+cred_json = os.getenv('FIREBASE_CREDENTIALS_PATH')  # Récupérer la clé JSON depuis les secrets
+cred = credentials.Certificate(cred_json)
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://firevent-iot-ea63b-default-rtdb.firebaseio.com/'  # URL de la base de données Firebase
+    'databaseURL': 'https://firevent-iot-ea63b-default-rtdb.firebaseio.com/'  # URL de votre base Firebase
 })
 
 # Récupérer les données de Firebase
