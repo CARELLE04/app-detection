@@ -8,7 +8,7 @@ from datetime import datetime
 # Initialiser Firebase
 cred = credentials.Certificate("path_to_your_firebase_admin_sdk_json_file.json")
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://your-database-name.firebaseio.com/'  # Remplacez par votre URL Firebase
+    'databaseURL': 'https://project-a9f16-default-rtdb.europe-west1.firebasedatabase.app/'  # Remplacez par votre URL Firebase
 })
 
 # Récupérer les données de Firebase
