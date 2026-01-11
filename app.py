@@ -5,15 +5,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-# Initialiser Firebase
-cred = credentials.Certificate("FIREBASE_CREDENTIALS_PATH")
+# Initialiser Firebase avec la clé JSON
+cred = credentials.Certificate("FIREBASE_CREDENTIALS_PATH")  # Cette valeur sera obtenue via Streamlit Secrets
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://console.firebase.google.com/project/firevent-iot-ea63b/database/firevent-iot-ea63b-default-rtdb/data'  # Remplacez par votre URL Firebase
+    'databaseURL': 'https://firevent-iot-ea63b-default-rtdb.firebaseio.com/'  # URL de la base de données Firebase
 })
 
 # Récupérer les données de Firebase
 def get_data_from_firebase():
-    ref = db.reference('mesures_esp32')  # Référence à votre nœud Firebase
+    ref = db.reference('mesures_esp32')  # Référence au nœud Firebase
     data = ref.get()
     
     # Convertir les données en DataFrame pour faciliter l'analyse
