@@ -1,64 +1,97 @@
 import streamlit as st
-import firebase_admin
-from firebase_admin import credentials, db
+import requests
 import pandas as pd
+import time
+from datetime import datetime
 import matplotlib.pyplot as plt
 
-# --- INIT FIREBASE (une seule fois) ---
-def init_firebase():
-    if not firebase_admin._apps:
-        cred_dict = eval(st.secrets["FIREBASE_SERVICE_ACCOUNT"])  # JSON string -> dict
-        cred = credentials.Certificate(cred_dict)
-        firebase_admin.initialize_app(cred, {
-            "databaseURL": st.secrets["FIREBASE_DATABASE_URL"]
-        })
+# ==============================
+# CONFIG STREAMLIT
+# ==============================
+st.set_page_config(
+    page_title="DHT Firebase Monitor",
+    layout="wide"
+)
 
-init_firebase()
+st.title("📡 Surveillance Température & Humidité (Firebase)")
 
-# --- LECTURE DATA ---
-def get_data_from_firebase():
-    ref = db.reference("mesures_esp32")
-    data = ref.get()
+# ==============================
+# FIREBASE CONFIG
+# ==============================
+FIREBASE_URL = "https://projet-final-2b542-default-rtdb.europe-west1.firebasedatabase.app/"
 
-    if not data:
-        return pd.DataFrame()
+REFRESH_INTERVAL = 2  # secondes
 
-    df = pd.DataFrame.from_dict(data, orient="index")
+# ==============================
+# INITIALISATION DES DONNÉES
+# ==============================
+if "data" not in st.session_state:
+    st.session_state.data = pd.DataFrame(
+        columns=["time", "temperature", "humidity"]
+    )
 
-    if "timestamp" in df.columns:
-        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+# ==============================
+# FONCTION DE LECTURE FIREBASE
+# ==============================
+def read_firebase():
+    try:
+        response = requests.get(FIREBASE_URL, timeout=5)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        st.error(f"Erreur Firebase : {e}")
+        return None
 
-    return df.sort_values("timestamp")
+# ==============================
+# BOUCLE TEMPS RÉEL
+# ==============================
+placeholder = st.empty()
 
-# --- GRAPHS ---
-def plot_graphs(df):
-    if df.empty:
-        st.warning("Aucune donnée trouvée dans Firebase.")
-        return
+while True:
+    data = read_firebase()
 
-    # Température
-    fig1, ax1 = plt.subplots()
-    ax1.plot(df["timestamp"], df["temperature"])
-    ax1.set_title("Variation de la Température")
-    ax1.set_xlabel("Date")
-    ax1.set_ylabel("Température (°C)")
-    st.pyplot(fig1)
+    if data and "temperature" in data and "humidity" in data:
+        new_row = {
+            "time": datetime.now(),
+            "temperature": data["temperature"],
+            "humidity": data["humidity"]
+        }
 
-    # Humidité
-    fig2, ax2 = plt.subplots()
-    ax2.plot(df["timestamp"], df["humidity"])
-    ax2.set_title("Variation de l'Humidité")
-    ax2.set_xlabel("Date")
-    ax2.set_ylabel("Humidité (%)")
-    st.pyplot(fig2)
+        st.session_state.data = pd.concat(
+            [st.session_state.data, pd.DataFrame([new_row])],
+            ignore_index=True
+        )
 
-# --- UI ---
-def main():
-    st.title("Visualisation Température & Humidité (Firebase)")
-    df = get_data_from_firebase()
-    st.write("Aperçu des données :")
-    st.dataframe(df.head())
-    plot_graphs(df)
+        # Garde seulement les 100 dernières valeurs
+        st.session_state.data = st.session_state.data.tail(100)
 
-if __name__ == "__main__":
-    main()
+    with placeholder.container():
+        col1, col2 = st.columns(2)
+
+        # -------- GRAPHE TEMPÉRATURE --------
+        with col1:
+            st.subheader("🌡️ Température (°C)")
+            fig, ax = plt.subplots()
+            ax.plot(
+                st.session_state.data["time"],
+                st.session_state.data["temperature"]
+            )
+            ax.set_xlabel("Temps")
+            ax.set_ylabel("Température (°C)")
+            ax.grid(True)
+            st.pyplot(fig)
+
+        # -------- GRAPHE HUMIDITÉ --------
+        with col2:
+            st.subheader("💧 Humidité (%)")
+            fig, ax = plt.subplots()
+            ax.plot(
+                st.session_state.data["time"],
+                st.session_state.data["humidity"]
+            )
+            ax.set_xlabel("Temps")
+            ax.set_ylabel("Humidité (%)")
+            ax.grid(True)
+            st.pyplot(fig)
+
+    time.sleep(REFRESH_INTERVAL)
