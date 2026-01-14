@@ -19,7 +19,7 @@ st.title("📡 Surveillance Température & Humidité (Firebase)")
 # ==============================
 # FIREBASE CONFIG
 # ==============================
-FIREBASE_URL = "https://projet-final-2b542-default-rtdb.europe-west1.firebasedatabase.app/"
+FIREBASE_URL = "https://projet-final-2b542-default-rtdb.europe-west1.firebasedatabase.app/firevent/realtime.json"
 
 REFRESH_INTERVAL = 2  # secondes
 
