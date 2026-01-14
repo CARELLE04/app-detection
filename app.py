@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 import matplotlib.pyplot as plt
 
+
 # ==============================
 # CONFIG STREAMLIT
 # ==============================
